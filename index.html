@@ -1512,5 +1512,84 @@ function pokerShow(){pPh='over';renderPoker(false);document.getElementById('poke
   else{G.losses++;G.streak=0;banner('poker-res','res-l',`💀 ИИ · ${HR[ar]}`,`-${fmt(G.currentBet)} монет`);addHistory('poker',false,G.currentBet);}
   document.getElementById('poker-act').innerHTML=`<button class="btn btn-g" style="grid-column:1/-1" onclick="pokerDeal()">♠️ Новая раздача</button>`;renderUI();}
 </script>
+<!-- ДОБАВЬ В САМЫЙ НИЗ ПЕРЕД </body> -->
+<script>
+const tg = window.Telegram.WebApp;
+const user = tg.initDataUnsafe?.user || { id: 1, username: "guest" };
+
+// регистрация пользователя
+fetch('http://localhost:3000/user', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    id: user.id,
+    username: user.username || 'player'
+  })
+});
+
+// загрузка данных пользователя
+async function loadUser() {
+  try {
+    const res = await fetch(`http://localhost:3000/user/${user.id}`);
+    const data = await res.json();
+
+    if (!data) return;
+
+    // HOME
+    const coinsEl = document.getElementById('s-coins');
+    const winsEl = document.getElementById('s-wins');
+    const nameEl = document.getElementById('uname');
+
+    if (coinsEl) coinsEl.innerText = data.coins;
+    if (winsEl) winsEl.innerText = data.wins;
+    if (nameEl) nameEl.innerText = data.username;
+
+    // PROFILE
+    const pCoins = document.getElementById('pstat-coins');
+    const pWins = document.getElementById('pstat-wins');
+    const pLoss = document.getElementById('pstat-losses');
+    const pName = document.getElementById('prof-name');
+    const pId = document.getElementById('prof-id');
+
+    if (pCoins) pCoins.innerText = data.coins;
+    if (pWins) pWins.innerText = data.wins;
+    if (pLoss) pLoss.innerText = data.losses;
+    if (pName) pName.innerText = data.username;
+    if (pId) pId.innerText = data.id;
+
+  } catch (e) {
+    console.log('Ошибка загрузки пользователя', e);
+  }
+}
+
+loadUser();
+
+// обновление монет
+function updateCoins(amount) {
+  fetch('http://localhost:3000/update-coins', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: user.id,
+      coins: amount
+    })
+  }).then(() => loadUser());
+}
+
+// пример: вызывать после игр
+function win(amount) {
+  updateCoins(amount);
+}
+
+function lose(amount) {
+  updateCoins(-amount);
+}
+
+// пример интеграции (вставь в свои игры)
+// win(100);
+// lose(50);
+
+</script>
+
 </body>
 </html>
